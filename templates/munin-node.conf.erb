@@ -54,6 +54,12 @@ allow <%= "^#{Regexp.escape(allow)}$" %>
 # cidr_allow 127.0.0.1/32
 # cidr_allow 192.0.2.0/24
 # cidr_deny  192.0.2.42/32
+<% scope.lookupvar('munin::cidr_allow').each do |cidr_allow| -%>
+cidr_allow <%= cidr_allow %>
+<% end -%>
+<% scope.lookupvar('munin::cidr_deny').each do |cidr_deny| -%>
+cidr_deny <%= cidr_deny %>
+<% end -%>
 
 # Which address to bind to;
 host <%= scope.lookupvar('munin::host') %>

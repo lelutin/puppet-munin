@@ -30,6 +30,8 @@ class munin (
   $is_server                  = false,
   $export_tag                 = 'munin',
   $allow                      = [ '127.0.0.1' ],
+  $cidr_allow                 = [],
+  $cidr_deny                  = [],
   $host                       = '*',
   $host_name                  = $::fqdn,
   $port                       = '4949',
