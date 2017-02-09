@@ -56,6 +56,20 @@ for multiple munin collectors, you can pass an array:
 
       class { 'munin': allow => [ '192.168.0.1', '10.0.0.1' ] }
 
+You can also use the CIDR-format with `cidr_allow` and `cidr_deny` to allow and
+deny entire blocks of IPs. These two options can be used in conjunction to
+`allow`. The following example will permit access to munin-node to 10.0.0.1,
+and all IPs starting with '10.10' except from those that start with
+'10.10.100':
+
+      node foo {
+        class { 'munin':
+          allow      => [ '10.0.0.1' ],
+          cidr_allow => [ '10.10.0.0/16' ],
+          cidr_deny  => [ '10.10.100.0/24' ],
+        }
+      }
+
 ### Local plugins
 
 If there are particular munin plugins you want to enable or configure, you define them
