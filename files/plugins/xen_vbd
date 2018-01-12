@@ -16,9 +16,11 @@
 $XM = '/usr/sbin/xm';
 $XMTOP = '/usr/sbin/xentop';
 
+my $statedir = ($ENV{MUNIN_PLUGSTATE} || '/var/lib/munin-node/plugin-state/')
+
 # we cache xm list for 5 min for perfomance reasons
-system('((find /var/lib/munin/plugin-state/xm_list.state -mmin -5 2>&1 | grep -qE \'^\/var\/lib\/munin\/plugin-state\/xm_list\.state$\') && [ `cat /var/lib/munin/plugin-state/xm_list.state | wc -l` -gt 1 ]) || /usr/sbin/xm list | grep -v "^Name .* ID" > /var/lib/munin/plugin-state/xm_list.state');
-system('((find /var/lib/munin/plugin-state/xm_top.state -mmin -5 2>&1 | grep -qE \'^\/var\/lib\/munin\/plugin-state\/xm_top\.state$\') && [ `cat /var/lib/munin/plugin-state/xm_top.state | wc -l` -gt 1 ]) || /usr/sbin/xentop -b -i1 | grep -E "^ " > /var/lib/munin/plugin-state/xm_top.state');
+system('([ `find '.$statedir.'/xm_list.state -mmin -5 2>&1 | wc -l` -gt 1 ] && [ `cat '.$statedir.'/xm_list.state | wc -l` -gt 1 ]) || /usr/sbin/xm list | grep -v "^Name .* ID" > '.$statedir.'/xm_list.state');
+system('([ `find '.$statedir.'/xm_top.state -mmin -5 2>&1 | wc -l` -gt 1 ] && [ `cat '.$statedir.'/xm_top.state | wc -l` -gt 1 ]) || /usr/sbin/xentop -b -i1 | grep -E "^ " > '.$statedir.'/xm_top.state');
 
 # ah, parameters coming in
 if ( defined($ARGV[0]))
@@ -50,7 +52,7 @@ if ( defined($ARGV[0]))
                         'graph_info' => 'Display the I/O operations for each domain',
                 );
 
-                @domains = `cat /var/lib/munin/plugin-state/xm_list.state | grep -v 'Domain-0'`;
+                @domains = `cat ${statedir}/xm_list.state | grep -v 'Domain-0'`;
 
                 foreach $domain ( @domains )
                 {
@@ -85,7 +87,7 @@ if ( defined($ARGV[0]))
 
 
 # No args, get rolling
-my @stats = `cat /var/lib/munin/plugin-state/xm_top.state | grep -v 'Domain-0'`;
+my @stats = `cat ${statedir}/xm_top.state | grep -v 'Domain-0'`;
 
 # remove the first line
 shift(@stats);

@@ -11,10 +11,12 @@
 #%# family=auto
 #%# capabilities=autoconf
 
+STATEFILE=$MUNIN_PLUGSTATE/xm_list.state
+
 # we cache xm list for 5 min for perfomance reasons
-((find /var/lib/munin/plugin-state/xm_list.state -mmin -5 2>&1 | grep -qE '^\/var\/lib\/munin\/plugin-state\/xm_list\.state$') && \
-    [ `cat /var/lib/munin/plugin-state/xm_list.state | wc -l` -gt 1 ]) || \
-    /usr/sbin/xm list | grep -v "^Name .* ID" > /var/lib/munin/plugin-state/xm_list.state
+([ `find $STATEFILE -mmin -5 2>&1 | wc -l` -gt 1 ] && \
+    [ `cat $STATEFILE | wc -l` -gt 1 ]) || \
+    /usr/sbin/xm list | grep -v "^Name .* ID" > $STATEFILE
 
 if [ "$1" = "autoconf" ]; then
     if which xm > /dev/null ; then
@@ -35,12 +37,12 @@ fi
 # we update network devices only twice an hour
 function net_state {
   dom=$1
-  if [ `find /var/lib/munin/plugin-state/xm_net_$dom.state -mmin +30 2> /dev/null | wc -l` -gt 0 ] || [ ! -f /var/lib/munin/plugin-state/xm_net_$dom.state ]; then
+  if [ `find $MUNIN_PLUGSTATE/xm_net_$dom.state -mmin +30 2> /dev/null | wc -l` -gt 0 ] || [ ! -f $MUNIN_PLUGSTATE/xm_net_$dom.state ]; then
     content=$(/usr/sbin/xm network-list $dom)
     if [ $? -eq 0 ]; then
-      echo "${content}" | egrep "^[0-9]+" | sed 's@^.*vif/\([0-9]*\)/\([0-9]*\).*$@vif\1.\2@' > /var/lib/munin/plugin-state/xm_net_$dom.state
+      echo "${content}" | egrep "^[0-9]+" | sed 's@^.*vif/\([0-9]*\)/\([0-9]*\).*$@vif\1.\2@' > $MUNIN_PLUGSTATE/xm_net_$dom.state
     else
-      [ -f /var/lib/munin/plugin-state/xm_net_$dom.state ] && rm /var/lib/munin/plugin-state/xm_net_$dom.state
+      [ -f $MUNIN_PLUGSTATE/xm_net_$dom.state ] && rm $MUNIN_PLUGSTATE/xm_net_$dom.state
     fi
   fi
 }
@@ -50,11 +52,11 @@ if [ "$1" = "config" ]; then
     echo 'graph_vlabel bits received (-) / sent (+) per ${graph_period}'
     echo 'graph_args --base 1024 -l 0'
     echo 'graph_category xen'
-    DOMAINS=$(cat /var/lib/munin/plugin-state/xm_list.state | awk '{print $1}' | egrep -v "^(Name|Domain-0)")
+    DOMAINS=$(cat $STATEFILE | awk '{print $1}' | egrep -v "^(Name|Domain-0)")
     for dom in $DOMAINS; do
       net_state $dom
-      if [ -f /var/lib/munin/plugin-state/xm_net_$dom.state ]; then
-        devs=$(cat /var/lib/munin/plugin-state/xm_net_$dom.state)
+      if [ -f $MUNIN_PLUGSTATE/xm_net_$dom.state ]; then
+        devs=$(cat $MUNIN_PLUGSTATE/xm_net_$dom.state)
         real_name=$( echo $dom | sed -e's/-/_/g' )
         name=$real_name
         for dev in $devs; do
@@ -76,11 +78,11 @@ if [ "$1" = "config" ]; then
     exit 0
 fi
 
-DOMAINS=$(cat /var/lib/munin/plugin-state/xm_list.state | awk '{print $1}' | egrep -v "^(Name|Domain-0)")
+DOMAINS=$(cat $STATEFILE | awk '{print $1}' | egrep -v "^(Name|Domain-0)")
 for dom in $DOMAINS; do
     net_state $dom
-    if [ -f /var/lib/munin/plugin-state/xm_net_$dom.state ]; then
-      devs=$(cat /var/lib/munin/plugin-state/xm_net_$dom.state)
+    if [ -f $MUNIN_PLUGSTATE/xm_net_$dom.state ]; then
+      devs=$(cat $MUNIN_PLUGSTATE/xm_net_$dom.state)
       real_name=$( echo $dom | sed -e's/-/_/g' )
       name=$real_name
       for dev in $devs; do

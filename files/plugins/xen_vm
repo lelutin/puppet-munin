@@ -45,10 +45,12 @@
 
 XM="/usr/sbin/xm"
 
+STATEFILE=$MUNIN_PLUGSTATE/xm_list.state
+
 # we cache xm list for 5 min for perfomance reasons
-((find /var/lib/munin/plugin-state/xm_list.state -mmin -5 2>&1 | grep -qE '^\/var\/lib\/munin\/plugin-state\/xm_list\.state$') && \
-    [ `cat /var/lib/munin/plugin-state/xm_list.state | wc -l` -gt 1 ]) || \
-    /usr/sbin/xm list | grep -v "^Name .* ID" > /var/lib/munin/plugin-state/xm_list.state
+([ `find $STATEFILE -mmin -5 2>&1 | wc -l` -gt 1 ] && \
+    [ `cat $STATEFILE | wc -l` -gt 1 ]) || \
+    /usr/sbin/xm list | grep -v "^Name .* ID" > $STATEFILE
 
 if [ "$1" = "autoconf" ]; then
 	echo yes
@@ -66,7 +68,7 @@ if [ "$1" = "config" ]; then
 	exit 0
 fi
 
-domains=`cat /var/lib/munin/plugin-state/xm_list.state | wc -l`
+domains=`cat $STATEFILE | wc -l`
 
 echo -n "domains.value "
 echo $(($domains-1))
