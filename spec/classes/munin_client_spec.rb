@@ -8,7 +8,7 @@ describe 'munin::client' do
       :lsbdistcodename => codename,
     }}
     it { should contain_package('munin-node') }
-    it { should contain_package('iproute') }
+    it { should contain_package('iproute2') }
     it { should contain_file('/etc/munin/munin-node.conf') }
     it { should contain_class('munin::client::debian') }
   end
