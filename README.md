@@ -152,11 +152,3 @@ collector is associated with one client:
           $export_tag => 'coll2',
         }
       }
-
-### Multiple munin-node instances with Linux-VServer
-
-If you have Linux-Vservers configured, you will likely have multiple munin-node processes
-competing for the default port 4949, for those nodes, set an alternate port for munin-node
-to run on by putting something similar to the following class parameter:
-
-      class { 'munin': allow => '192.168.0.1', port => '4948' }
