@@ -17,12 +17,7 @@ class munin::plugins::base {
 
   case $::kernel {
     openbsd: { include munin::plugins::openbsd }
-    linux: {
-      case $::vserver {
-        guest: { include munin::plugins::vserver }
-        default: { include munin::plugins::linux }
-      }
-    }
+    linux: { include munin::plugins::linux }
   }
 
   case $::virtual {
