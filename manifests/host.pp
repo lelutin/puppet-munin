@@ -25,6 +25,7 @@ class munin::host {
     owner => root,
     group => 0,
     mode  => '0644',
+    order => 'numeric',
   }
 
   include munin::plugins::muninhost
